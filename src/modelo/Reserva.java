@@ -27,4 +27,14 @@ public class Reserva {
 		System.out.println("Data de Entrada: " + dataEntrada);
 		System.out.println("Data de Saída: " + dataSaida);
 	}
+
+	public Pessoa getHospede() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Quarto getQuarto() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -1,98 +1,89 @@
 package aplicacao;
 
 import modelo.*;
+import servico.QuartoServico;
+import servico.ReservaServico;
+import servico.SistemaReserva;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-import java.util.Date;
 
 public class Main {
-	private static ArrayList<Quarto> quartos = new ArrayList<>();
-	private static ArrayList<Hospede> hospedes = new ArrayList<>();
-	private static ArrayList<Reserva> reservas = new ArrayList<>();
-	private static Scanner sc = new Scanner(System.in);
+    private static ArrayList<Hospede> hospedes = new ArrayList<>();
+    private static ArrayList<Reserva> reservas = new ArrayList<>();
+    private static QuartoServico quartoServico = new QuartoServico();
+    private static ReservaServico reservaServico = new ReservaServico();
+    private static Scanner sc = new Scanner(System.in);
 
-	public static void main(String[] args) {
-		inicializarQuartos();
+    public static void main(String[] args) {
+        inicializarQuartos(); // Inicializa os quartos disponíveis
 
-		int opcao;
+        // Aqui estamos usando List<Quarto> ao invés de ArrayList<Quarto>
+        List<Quarto> quartos = quartoServico.getQuartos(); // Garantindo o tipo correto
+        SistemaReserva sistemaReserva = new SistemaReserva(quartos, hospedes, reservas);
 
-		do {
-			System.out.println("1. Cadastrar Hóspede");
-			System.out.println("2. Listar Quartos");
-			System.out.println("3. Fazer Reserva");
-			System.out.println("4. Sair");
-			opcao = sc.nextInt();
-			sc.nextLine();
+        int opcao;
 
-			switch (opcao) {
-			case 1 -> cadastrarHospede();
-			case 2 -> listarQuartos();
-			case 3 -> fazerReserva();
-			case 4 -> System.out.println("Saindo...");
-			default -> System.out.println("Opção inválida");
+        do {
+            System.out.println("1. Cadastrar Hóspede");
+            System.out.println("2. Listar Quartos");
+            System.out.println("3. Fazer Reserva");
+            System.out.println("4. Sair");
+            opcao = sc.nextInt();
+            sc.nextLine(); // Limpar o buffer
 
-			}
+            switch (opcao) {
+                case 1 -> cadastrarHospede();
+                case 2 -> listarQuartos();
+                case 3 -> fazerReserva(sistemaReserva);
+                case 4 -> System.out.println("Saindo...");
+                default -> System.out.println("Opção inválida");
+            }
 
-		} while (opcao != 4);
+        } while (opcao != 4);
+    }
 
-	}
+    private static void inicializarQuartos() {
+        // Adiciona quartos ao sistema usando o QuartoServico
+        quartoServico.adicionarQuarto(new Quarto(201, "Simples", true));
+        quartoServico.adicionarQuarto(new Quarto(202, "Duplo", true));
+        quartoServico.adicionarQuarto(new Quarto(203, "Luxo", true));
+        System.out.println("Quartos iniciais cadastrados como disponíveis.");
+    }
 
-	private static void inicializarQuartos() {
-		// Adiciona quartos ao sistema
-		quartos.add(new Quarto(201, "Simples", true));
-		quartos.add(new Quarto(202, "Duplo", true));
-		quartos.add(new Quarto(203, "Luxo", true));
-		System.out.println("Quartos inicias cadastrados e disponíveis.");
-	}
+    private static void cadastrarHospede() {
+        System.out.println("Nome: ");
+        String nome = sc.nextLine();
+        System.out.println("CPF: ");
+        String cpf = sc.nextLine();
+        System.out.println("Telefone: ");
+        String telefone = sc.nextLine();
 
-	private static void cadastrarHospede() {
-		System.out.println("Nome: ");
-		String nome = sc.nextLine();
-		System.out.println("CPF: ");
-		String cpf = sc.nextLine();
-		System.out.println("Telefone: ");
-		String telefone = sc.nextLine();
+        Hospede hospede = new Hospede(nome, cpf, telefone);
+        hospedes.add(hospede); // Adiciona o hospede à lista
+        System.out.println("Hóspede cadastrado com sucesso!");
+    }
 
-		Hospede hospede = new Hospede(nome, cpf, telefone);
-		hospedes.add(hospede);
-		System.out.println("Hóspede cadastrado com sucesso!");
-	}
+    private static void listarQuartos() {
+        quartoServico.listarQuartos();  // Usando o método do QuartoServico
+    }
 
-	private static void listarQuartos() {
-		// Laço for-each
-		for (Quarto quarto : quartos) {
-			quarto.exibirInfo();
-		}
+    private static void fazerReserva(SistemaReserva sistemaReserva) {
+        listarQuartos();
+        System.out.println("Número do quarto: ");
+        int numeroQuarto = sc.nextInt();
+        sc.nextLine(); // Limpar o buffer
 
-	}
+        System.out.println("Nome do hóspede: ");
+        String nomeHospede = sc.nextLine();
 
-	private static void fazerReserva() {
-		listarQuartos();
-		System.out.println("Número do quarto: ");
-		int numeroQuarto = sc.nextInt();
-		sc.nextLine(); // Garante que o buffer seja limpo para a entrada de texto
+        System.out.println("Data de início (dd/MM/yyyy): ");
+        String dataInicio = sc.nextLine();
 
-		Quarto quartoEscolhido = quartos.stream().filter(q -> q.getNumero() == numeroQuarto).findFirst().orElse(null);
+        System.out.println("Data de término (dd/MM/yyyy): ");
+        String dataFim = sc.nextLine();
 
-		if (quartoEscolhido != null && quartoEscolhido.isDisponivel()) {
-			System.out.println("Nome do hóspede: ");
-			String nomeHospede = sc.nextLine();
-
-			Hospede hospede = hospedes.stream().filter(h -> h.getNome().equals(nomeHospede)).findFirst().orElse(null);
-
-			if (hospede != null) {
-				// Cria uma nova reserva com as datas de início e término
-				Reserva reserva = new Reserva(hospede, quartoEscolhido, new Date(), new Date());
-				reservas.add(reserva);
-				quartoEscolhido.setDisponivel(false); // Define o quarto como indisponivel
-				System.out.println("Reserva realizada com sucesso!");
-
-			} else {
-				System.out.println("Hóspede não encontrado!");
-			}
-		} else {
-			System.out.println("Quarto indisponível!");
-		}
-
-	}
+        // Chama o serviço de reserva passando o sistema de reserva
+        reservaServico.fazerReserva(numeroQuarto, nomeHospede, dataInicio, dataFim, sistemaReserva);
+    }
 }
