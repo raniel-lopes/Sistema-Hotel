@@ -17,7 +17,6 @@ public class SistemaReserva {
         this.reservas = reservas;
     }
 
-    // Alterando para List<Quarto>, List<Hospede> e List<Reserva>
     public List<Quarto> getQuartos() {
         return quartos;
     }
@@ -30,37 +29,45 @@ public class SistemaReserva {
         return reservas;
     }
 
+    // Adiciona uma reserva se ela não existir
     public void adicionarReserva(Reserva reserva) {
-        reservas.add(reserva);
+        // Verifica se já existe uma reserva para o hóspede ou quarto
+        if (buscarReservaPorHospede(reserva.getHospede().getNome()) != null) {
+            System.out.println("Já existe uma reserva para este hóspede.");
+        } else if (buscarReservaPorQuarto(reserva.getQuarto().getNumero()) != null) {
+            System.out.println("Este quarto já está reservado.");
+        } else {
+            reservas.add(reserva);
+            System.out.println("Reserva adicionada com sucesso!");
+        }
     }
 
+    // Exibe todas as reservas
     public void listarReservas() {
         if (reservas.isEmpty()) {
             System.out.println("Não há reservas registradas.");
         } else {
             System.out.println("\n*** Lista de Reservas ***");
-            for (Reserva reserva : reservas) {
+            reservas.forEach(reserva -> {
                 reserva.exibirInfo();
                 System.out.println("------------------------------");
-            }
+            });
         }
     }
 
+    // Busca uma reserva pelo nome do hóspede
     public Reserva buscarReservaPorHospede(String nomeHospede) {
-        for (Reserva reserva : reservas) {
-            if (reserva.getHospede().getNome().equals(nomeHospede)) {
-                return reserva;
-            }
-        }
-        return null;
+        return reservas.stream()
+                       .filter(reserva -> reserva.getHospede().getNome().equals(nomeHospede))
+                       .findFirst()
+                       .orElse(null);
     }
 
+    // Busca uma reserva pelo número do quarto
     public Reserva buscarReservaPorQuarto(int numeroQuarto) {
-        for (Reserva reserva : reservas) {
-            if (reserva.getQuarto().getNumero() == numeroQuarto) {
-                return reserva;
-            }
-        }
-        return null;
+        return reservas.stream()
+                       .filter(reserva -> reserva.getQuarto().getNumero() == numeroQuarto)
+                       .findFirst()
+                       .orElse(null);
     }
 }

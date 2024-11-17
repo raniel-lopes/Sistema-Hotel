@@ -16,12 +16,12 @@ public class HospedeServico {
 		return hospedes;
 	}
 	
-	public void adicionarHospedes(Hospede hospede) {
+	public void adicionarHospede(Hospede hospede) {
 		hospedes.add(hospede);
 		System.out.println("Hóspede cadastrado: " + hospede.getNome());
 	}
 	
 	public Hospede buscarHospede(String nome) {
-		return hospedes.stream().filter(h -> h.getNome().equals(nome)).findFirst().orElse(null);
+	    return hospedes.stream().filter(h -> h.getNome().equalsIgnoreCase(nome)).findFirst().orElse(null);
 	}
 }

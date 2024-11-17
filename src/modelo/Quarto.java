@@ -36,6 +36,7 @@ public class Quarto {
 	}
 	
 	public void exibirInfo() {
-		System.out.println("Quarto número: " + numero + ", Tipo: " + tipo + ", Disponivel: " + disponivel);
+	    String status = disponivel ? "Disponível" : "Indisponível";
+	    System.out.println("Quarto número: " + numero + ", Tipo: " + tipo + ", Status: " + status);
 	}
 }
