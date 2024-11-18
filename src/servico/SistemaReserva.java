@@ -32,7 +32,7 @@ public class SistemaReserva {
     // Adiciona uma reserva se ela não existir
     public void adicionarReserva(Reserva reserva) {
         // Verifica se já existe uma reserva para o hóspede ou quarto
-        if (buscarReservaPorHospede(reserva.getHospede().getNome()) != null) {
+        if (buscarReservaPorHospede(reserva.getUsuario().getNome()) != null) {
             System.out.println("Já existe uma reserva para este hóspede.");
         } else if (buscarReservaPorQuarto(reserva.getQuarto().getNumero()) != null) {
             System.out.println("Este quarto já está reservado.");
@@ -58,7 +58,7 @@ public class SistemaReserva {
     // Busca uma reserva pelo nome do hóspede
     public Reserva buscarReservaPorHospede(String nomeHospede) {
         return reservas.stream()
-                       .filter(reserva -> reserva.getHospede().getNome().equals(nomeHospede))
+                       .filter(reserva -> reserva.getUsuario().getNome().equals(nomeHospede))
                        .findFirst()
                        .orElse(null);
     }

@@ -9,145 +9,249 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+
     private static List<Hospede> hospedes = new ArrayList<>(); // Usando List< Hospede >
     private static List<Reserva> reservas = new ArrayList<>(); // Usando List<Reserva>
     private static QuartoServico quartoServico = new QuartoServico();
     private static ReservaServico reservaServico = new ReservaServico();
     private static Scanner sc = new Scanner(System.in);
+    
+    // Variáveis de autenticação
+    private static boolean isAdministrador = false;
 
     public static void main(String[] args) {
         inicializarQuartos(); // Inicializa os quartos disponíveis
-
-        // Usando List<Quarto> ao invés de ArrayList<Quarto>
         List<Quarto> quartos = quartoServico.getQuartos(); 
         SistemaReserva sistemaReserva = new SistemaReserva(quartos, hospedes, reservas);
 
         int opcao;
+        
+        // Menu de login
+        if (fazerLogin()) {
+            do {
+                exibirMenu();  // Exibe o menu dependendo do tipo de usuário
+                opcao = sc.nextInt();
+                sc.nextLine(); // Limpar o buffer
 
-        do {
-            exibirMenu();  // Criado método para exibir menu
-            opcao = sc.nextInt();
-            sc.nextLine(); // Limpar o buffer
+                switch (opcao) {
+                    case 1 -> cadastrarHospede();
+                    case 2 -> listarQuartos();
+                    case 3 -> fazerReserva(sistemaReserva);
+                    case 4 -> adicionarNovoQuarto();
+                    case 5 -> System.out.println("Saindo... Programa encerrado.");
+                    default -> System.out.println("Opção inválida");
+                }
 
-            switch (opcao) {
-                case 1 -> cadastrarHospede();
-                case 2 -> listarQuartos();
-                case 3 -> fazerReserva(sistemaReserva);
-                case 4  -> adicionarNovoQuarto();
-                case 5 -> System.out.println("Saindo... Programa encerrado.");
-                default -> System.out.println("Opção inválida");
-            }
-
-        } while (opcao != 5);
+            } while (opcao != 5);
+        } else {
+            System.out.println("Login falhou. Programa encerrado.");
+        }
     }
 
+    // Método de login
+    private static boolean fazerLogin() {
+        System.out.println("Escolha o tipo de usuário: ");
+        System.out.println("1. Administrador");
+        System.out.println("2. Hóspede");
+
+        int opcao = sc.nextInt();
+        sc.nextLine(); // Limpar o buffer
+
+        if (opcao == 1) {
+            // Logar como administrador
+            System.out.print("Digite a senha do administrador: ");
+            String senha = sc.nextLine();
+            if (senha.equals("admin123")) {  // Senha fictícia do admin
+                isAdministrador = true;
+                System.out.println("Bem-vindo, Administrador!");
+                return true;
+            } else {
+                System.out.println("Senha incorreta!");
+                return false;
+            }
+        } else if (opcao == 2) {
+            // Logar como hóspede
+            System.out.println("Bem-vindo, Hóspede!");
+            return true;
+        } else {
+            System.out.println("Opção inválida!");
+            return false;
+        }
+    }
+
+    // Método para exibir o menu com base no tipo de usuário
     private static void exibirMenu() {
         System.out.println("\n*** Sistema de Reservas ***");
-        System.out.println("1. Cadastrar Hóspede");
-        System.out.println("2. Listar Quartos");
-        System.out.println("3. Fazer Reserva");
-        System.out.println("4. Adicionar novo Quarto");
-        System.out.println("5. Sair");
+        
+        if (isAdministrador) {
+            // Menu do Administrador
+            System.out.println("1. Cadastrar Hóspede");
+            System.out.println("2. Listar Quartos");
+            System.out.println("3. Fazer Reserva");
+            System.out.println("4. Adicionar novo Quarto");
+            System.out.println("5. Sair");
+        } else {
+            // Menu do Hóspede
+            System.out.println("1. Cadastrar Hóspede");
+            System.out.println("2. Listar Quartos");
+            System.out.println("3. Fazer Reserva");
+            System.out.println("5. Sair");
+        }
     }
 
     private static void inicializarQuartos() {
-        // Adiciona quartos ao sistema usando o QuartoServico
         quartoServico.adicionarQuarto(new Quarto(201, "Simples", true));
         quartoServico.adicionarQuarto(new Quarto(202, "Duplo", true));
         quartoServico.adicionarQuarto(new Quarto(203, "Luxo", true));
         System.out.println("Quartos iniciais cadastrados como disponíveis.");
     }
-    
+
     private static void adicionarNovoQuarto() {
-        // Lógica para adicionar um novo quarto
-        System.out.println("Digite os dados do novo quarto:");
+        if (isAdministrador) {  // Somente administrador pode adicionar quartos
+            System.out.println("Digite os dados do novo quarto:");
+            System.out.print("Número do quarto: ");
+            int numero = sc.nextInt();
+            sc.nextLine(); // Limpar o buffer
 
-        System.out.print("Número do quarto: ");
-        int numero = sc.nextInt();
-        sc.nextLine(); // Limpar o buffer
+            // Verificar se já existe um quarto com o mesmo número
+            for (Quarto quarto : quartoServico.getQuartos()) {
+                if (quarto.getNumero() == numero) {
+                    System.out.println("Erro: Já existe um quarto com esse número.");
+                    return;  // Interrompe a execução se o número já existir
+                }
+            }
 
-        System.out.print("Tipo do quarto (Simples, Duplo, Luxo): ");
-        String tipo = sc.nextLine();
+            System.out.print("Tipo do quarto (Simples, Duplo, Luxo): ");
+            String tipo = sc.nextLine();
 
-        System.out.print("Está disponível (true/false): ");
-        boolean disponivel = sc.nextBoolean();
-        sc.nextLine(); // Limpar o buffer
+            System.out.print("Está disponível (true/false): ");
+            boolean disponivel = sc.nextBoolean();
+            sc.nextLine(); // Limpar o buffer
 
-        // Criação do novo quarto e adição à lista
-        Quarto novoQuarto = new Quarto(numero, tipo, disponivel);
-        quartoServico.adicionarQuarto(novoQuarto);
-        
-        System.out.println("Novo quarto adicionado com sucesso!");
+            // Criar e adicionar o novo quarto
+            Quarto novoQuarto = new Quarto(numero, tipo, disponivel);
+            quartoServico.adicionarQuarto(novoQuarto);
+
+            System.out.println("Novo quarto adicionado com sucesso!");
+        } else {
+            System.out.println("Você não tem permissão para adicionar quartos.");
+        }
     }
 
 
     private static void cadastrarHospede() {
-        System.out.println("Digite os dados do hóspede:");
+        if (isAdministrador) {
+            // Somente o administrador pode cadastrar novos hóspedes
+            System.out.println("Digite os dados do hóspede:");
+            System.out.print("Nome: ");
+            String nome = sc.nextLine().trim();
 
-        System.out.print("Nome: ");
-        String nome = sc.nextLine().trim();  // Usando trim() para garantir que não há espaços antes e depois do nome
-
-        if (nome.isEmpty()) { // Verifica se o nome está vazio
-            System.out.println("Erro: O nome não pode ser vazio!");
-            return; // Não prossegue com o cadastro se o nome estiver vazio
-        }
-
-        // Verificação de duplicidade de nome
-        for (Hospede h : hospedes) {
-            if (h.getNome().equalsIgnoreCase(nome)) { // Compara sem distinguir maiúsculas e minúsculas
-                System.out.println("Erro: Já existe um hóspede cadastrado com esse nome.");
-                return; // Não prossegue com o cadastro se o nome já existir
+            if (nome.isEmpty()) {
+                System.out.println("Erro: O nome não pode ser vazio!");
+                return;
             }
-        }
 
-        // Validação de CPF
-        String cpf;
-        while (true) {
-            System.out.print("CPF (somente números): ");
-            cpf = sc.nextLine();
-            if (cpf.matches("\\d{11}")) {  // Verifica se o CPF tem 11 dígitos
-                // Verificação de duplicidade de CPF
-                boolean cpfDuplicado = false;
-                for (Hospede h : hospedes) {
-                    if (h.getCpf().equals(cpf)) { // Verifica se o CPF já está registrado
-                        System.out.println("Erro: Já existe um hóspede cadastrado com esse CPF.");
-                        cpfDuplicado = true;
+            for (Hospede h : hospedes) {
+                if (h.getNome().equalsIgnoreCase(nome)) {
+                    System.out.println("Erro: Já existe um hóspede cadastrado com esse nome.");
+                    return;
+                }
+            }
+
+            String cpf;
+            while (true) {
+                System.out.print("CPF (somente números): ");
+                cpf = sc.nextLine();
+                if (cpf.matches("\\d{11}")) {
+                    boolean cpfDuplicado = false;
+                    for (Hospede h : hospedes) {
+                        if (h.getCpf().equals(cpf)) {
+                            System.out.println("Erro: Já existe um hóspede cadastrado com esse CPF.");
+                            cpfDuplicado = true;
+                            break;
+                        }
+                    }
+                    if (!cpfDuplicado) {
                         break;
                     }
+                } else {
+                    System.out.println("CPF inválido! Tente novamente.");
                 }
-                if (!cpfDuplicado) {
-                    break; // CPF válido e não duplicado, então sai do loop
-                }
-            } else {
-                System.out.println("CPF inválido! Tente novamente.");
             }
+
+            System.out.print("Telefone: ");
+            String telefone = sc.nextLine();
+
+            Hospede hospede = new Hospede(nome, cpf, telefone);
+            hospedes.add(hospede);
+            System.out.println("Hóspede cadastrado com sucesso!");
+        } else {
+            // Caso não seja administrador, o hóspede pode se cadastrar a si mesmo
+            System.out.println("Digite os dados para o seu cadastro:");
+            System.out.print("Nome: ");
+            String nome = sc.nextLine().trim();
+
+            if (nome.isEmpty()) {
+                System.out.println("Erro: O nome não pode ser vazio!");
+                return;
+            }
+
+            // Verifica se o hóspede já está cadastrado pelo nome
+            for (Hospede h : hospedes) {
+                if (h.getNome().equalsIgnoreCase(nome)) {
+                    System.out.println("Erro: Já existe um hóspede cadastrado com esse nome.");
+                    return;
+                }
+            }
+
+            // Lógica para o cadastro de CPF
+            String cpf;
+            while (true) {
+                System.out.print("CPF (somente números): ");
+                cpf = sc.nextLine();
+                if (cpf.matches("\\d{11}")) {
+                    boolean cpfDuplicado = false;
+                    for (Hospede h : hospedes) {
+                        if (h.getCpf().equals(cpf)) {
+                            System.out.println("Erro: Já existe um hóspede cadastrado com esse CPF.");
+                            cpfDuplicado = true;
+                            break;
+                        }
+                    }
+                    if (!cpfDuplicado) {
+                        break;
+                    }
+                } else {
+                    System.out.println("CPF inválido! Tente novamente.");
+                }
+            }
+
+            System.out.print("Telefone: ");
+            String telefone = sc.nextLine();
+
+            // Cria e adiciona o hóspede à lista
+            Hospede hospede = new Hospede(nome, cpf, telefone);
+            hospedes.add(hospede);
+            System.out.println("Cadastro realizado com sucesso!");
         }
-
-        System.out.print("Telefone: ");
-        String telefone = sc.nextLine();
-
-        // Agora podemos cadastrar o hóspede com segurança
-        Hospede hospede = new Hospede(nome, cpf, telefone);
-        hospedes.add(hospede); // Adiciona o hóspede à lista
-        System.out.println("Hóspede cadastrado com sucesso!");
     }
 
+
     private static void listarQuartos() {
-        quartoServico.listarQuartos();  // Usando o método do QuartoServico
+        quartoServico.listarQuartos();
     }
 
     private static void fazerReserva(SistemaReserva sistemaReserva) {
         listarQuartos();
-        
-        // Verificação de entrada para o número do quarto
+
         int numeroQuarto;
         while (true) {
             System.out.print("Número do quarto: ");
             numeroQuarto = sc.nextInt();
-            sc.nextLine(); // Limpar o buffer
+            sc.nextLine();
 
             if (quartoServico.isQuartoDisponivel(numeroQuarto)) {
-                break; // Se o quarto estiver disponível, sai do loop
+                break;
             } else {
                 System.out.println("Quarto indisponível, por favor escolha outro.");
             }
@@ -156,7 +260,6 @@ public class Main {
         System.out.print("Nome do hóspede: ");
         String nomeHospede = sc.nextLine();
 
-        // Verifica se o hóspede está cadastrado
         Hospede hospede = hospedes.stream()
                                    .filter(h -> h.getNome().equals(nomeHospede))
                                    .findFirst()
@@ -164,7 +267,7 @@ public class Main {
 
         if (hospede == null) {
             System.out.println("Hóspede não encontrado! Faça o cadastro primeiro.");
-            return;  // Retorna para o menu principal se o hóspede não for encontrado
+            return;
         }
 
         System.out.print("Data de início (dd/MM/yyyy): ");
@@ -173,7 +276,6 @@ public class Main {
         System.out.print("Data de término (dd/MM/yyyy): ");
         String dataFim = sc.nextLine();
 
-        // Chama o serviço de reserva passando o sistema de reserva
         reservaServico.fazerReserva(numeroQuarto, nomeHospede, dataInicio, dataFim, sistemaReserva);
     }
 }

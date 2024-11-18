@@ -1,26 +1,16 @@
 package modelo;
 
-public class Funcionario extends Pessoa {
-	private String cargo;
+public class Funcionario extends Usuario {
 
-	public Funcionario(String nome, String cpf, String cargo) {
-		super(nome, cpf);
-		this.cargo = cargo;
-	}
+    // Construtor
+    public Funcionario(String nome, String cpf) {
+        super(nome, cpf);
+    }
 
-	public String getCargo() {
-		return cargo;
-	}
-
-	public void setCargo(String cargo) {
-		this.cargo = cargo;
-	}
-	
-	@Override
-	public void exibirInfo() {
-		super.exibirInfo();
-		System.out.println("Cargo: " + cargo);
-	}
-	
-	
+    // Sobrescrita do método exibirInfo
+    @Override
+    public void exibirInfo() {
+        super.exibirInfo();
+        System.out.println("Tipo de usuário: Funcionário");
+    }
 }
